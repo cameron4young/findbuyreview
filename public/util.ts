@@ -116,6 +116,24 @@ const operations: Operation[] = [
     method: "DELETE",
     fields: { collectionName: "input", id: "input" },
   },
+  {
+    name: "Add Label to Post",
+    endpoint: "/api/label",
+    method: "POST",
+    fields: { postId: "input", label: "input" },
+  },
+  {
+    name: "Remove Label from Post",
+    endpoint: "/api/label",
+    method: "DELETE",
+    fields: { postId: "input", label: "input" },
+  },
+  {
+    name: "Get Posts by Label",
+    endpoint: "/api/label/:label",
+    method: "GET",
+    fields: { label: "input" },
+  },
   //
   // ...
   //

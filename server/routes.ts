@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Saving, Sessioning } from "./app";
+import { Authing, Friending, Labeling, Posting, Saving, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -211,6 +211,28 @@ class Routes {
       return { msg: saved.msg };
     }
     return { msg: "Could not find Collection" };
+  }
+  @Router.post("/label")
+  async addLabelToPost(session: SessionDoc, postId: string, label: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(postId);
+    const response = await Labeling.addLabelToPost(label, oid);
+    return { msg: response.msg };
+  }
+
+  @Router.delete("/label")
+  async removeLabelFromPost(session: SessionDoc, postId: string, label: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(postId);
+    const response = await Labeling.removeLabelFromPost(label, oid);
+    return { msg: response.msg };
+  }
+
+  @Router.get("/label/:label")
+  async getPostsByLabel(session: SessionDoc, label: string) {
+    const user = Sessioning.getUser(session);
+    const posts = await Labeling.getPostsByLabel(label);
+    return { posts };
   }
 }
 
