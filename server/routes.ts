@@ -301,7 +301,7 @@ class Routes {
   }
 
   @Router.post("/conversations/:conversationId/messages")
-  async sendMessage(session: SessionDoc, conversationId: ObjectId, content: string, offer?: Offer) {
+  async sendMessage(session: SessionDoc, conversationId: ObjectId, content: string, offer?: String) {
     // Sends a new message in the specified conversation
   }
 
