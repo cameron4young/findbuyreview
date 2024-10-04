@@ -234,6 +234,111 @@ class Routes {
     const posts = await Labeling.getPostsByLabel(label);
     return { posts };
   }
+
+  @Router.post("/preferences/:username/interests")
+  async addInterest(session: SessionDoc, username: string, interest: string) {
+    // Adds an interest to the user's interests set
+  }
+
+  @Router.post("/preferences/favorite-companies")
+  async addFavoriteCompany(session: SessionDoc, company: string) {
+    // Adds a company to the user's favorite companies set
+  }
+
+  @Router.patch("/preferences/looking-for-status")
+  async updateLookingForStatus(session: SessionDoc, lookingFor: string) {
+    // Updates the user's "looking for" status
+  }
+
+  @Router.post("/preferences/location")
+  async addLocation(session: SessionDoc, location: string) {
+    // Adds the user's location
+  }
+
+  @Router.post("/preferences/age")
+  async addAge(session: SessionDoc, age: number) {
+    // Adds the user's age
+  }
+
+  @Router.post("/preferences/already-seen")
+  async addAlreadySeen(session: SessionDoc, seen: string) {
+    // Adds a company or product to the user's already-seen list
+  }
+
+  @Router.post("/preferences/blocked")
+  async addBlocked(session: SessionDoc, block: string) {
+    // Adds a company or product to the user's blocked list
+  }
+
+  @Router.get("/preferences/has-interest")
+  async hasInterest(session: SessionDoc, potentialInterests: Set<string>) {
+    // Returns true if any potential interests overlap with the user's interests
+  }
+
+  @Router.get("/preferences/likes-company")
+  async likesCompany(session: SessionDoc, companies: Set<string>) {
+    // Returns true if any companies are in the user's favorite companies set
+  }
+
+  @Router.patch("/preferences/location")
+  async editLocation(session: SessionDoc, newLocation: string) {
+    // Updates the user's location
+  }
+
+  @Router.get("/conversations")
+  async getConversations(session: SessionDoc) {
+    // Retrieves all conversations for the logged-in user
+  }
+
+  @Router.post("/conversations")
+  async createConversation(session: SessionDoc, recipientId: ObjectId) {
+    // Creates a new conversation between the logged-in user and the recipient
+  }
+
+  @Router.get("/conversations/:conversationId")
+  async getConversation(session: SessionDoc, conversationId: ObjectId) {
+    // Retrieves all messages in a specific conversation
+  }
+
+  @Router.post("/conversations/:conversationId/messages")
+  async sendMessage(session: SessionDoc, conversationId: ObjectId, content: string, offer?: Offer) {
+    // Sends a new message in the specified conversation
+  }
+
+  @Router.delete("/conversations/:conversationId/messages/:messageId")
+  async deleteMessage(session: SessionDoc, conversationId: ObjectId, messageId: ObjectId) {
+    // Deletes a specific message from the conversation
+  }
+
+  @Router.post("/offers")
+  async sendOffer(session: SessionDoc, company: string, product: string, duration: number, recipientId: ObjectId, deal: string) {
+    // Sends a new Offer (company, product, duration, deal) to the recipient
+  }
+
+  @Router.post("/promotions")
+  async createPromotion(session: SessionDoc, targetId: ObjectId, interests: Set<string>, similarCompanies: Set<string>, duration: number) {
+    // Promote a post or profile
+  }
+
+  @Router.get("/promotions")
+  async getPromotions(session: SessionDoc) {
+    // Get all promotions
+  }
+
+  @Router.patch("/promotions/:promotionId")
+  async updatePromotion(session: SessionDoc, promotionId: ObjectId, interests?: Set<string>, similarCompanies?: Set<string>, duration?: number) {
+    // Update promotion details
+  }
+
+  @Router.delete("/promotions/:promotionId")
+  async deletePromotion(session: SessionDoc, promotionId: ObjectId) {
+    // Cancel a promotion
+  }
+
+  @Router.get("/promotions/:promotionId/check-expiration")
+  async checkPromotionExpiration(session: SessionDoc, promotionId: ObjectId) {
+    // Check if promotion is expired
+  }
 }
 
 /** The web app. */
