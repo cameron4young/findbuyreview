@@ -80,6 +80,42 @@ const operations: Operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Create Collection",
+    endpoint: "/api/collection",
+    method: "POST",
+    fields: { collectionName: "input" },
+  },
+  {
+    name: "Delete Collection",
+    endpoint: "/api/collection",
+    method: "DELETE",
+    fields: { collectionName: "input" },
+  },
+  {
+    name: "Get All Collections",
+    endpoint: "/api/collection",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Get All Posts In Collection",
+    endpoint: "/api/collection/:collectionName",
+    method: "GET",
+    fields: { collectionName: "input" },
+  },
+  {
+    name: "Save Post To Collection",
+    endpoint: "/api/save",
+    method: "POST",
+    fields: { collectionName: "input", id: "input" },
+  },
+  {
+    name: "Delete Post From Collection",
+    endpoint: "/api/save",
+    method: "DELETE",
+    fields: { collectionName: "input", id: "input" },
+  },
   //
   // ...
   //

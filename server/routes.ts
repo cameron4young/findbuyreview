@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Sessioning } from "./app";
+import { Authing, Friending, Posting, Saving, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -151,6 +151,66 @@ class Routes {
     const user = Sessioning.getUser(session);
     const fromOid = (await Authing.getUserByUsername(from))._id;
     return await Friending.rejectRequest(fromOid, user);
+  }
+
+  @Router.post("/collection")
+  async createCollection(session: SessionDoc, collectionName: string) {
+    const user = Sessioning.getUser(session);
+    const saved = await Saving.createCollection(user, collectionName);
+    return { msg: saved.msg, collection: saved.collection };
+  }
+
+  @Router.delete("/collection")
+  async deleteCollection(session: SessionDoc, collectionName: string) {
+    const user = Sessioning.getUser(session);
+    const collectionId = await Saving.getCollectionByName(user, collectionName);
+    if (collectionId != null) {
+      const saved = await Saving.deleteCollection(user, collectionId);
+      return { msg: saved.msg };
+    }
+    return { msg: "Could not find Collection" };
+  }
+
+  @Router.get("/collection")
+  async getCollections(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const collections = await Saving.getAllCollectionNames();
+    return { collections: collections };
+  }
+
+  @Router.get("/collection/:collectionName")
+  async getCollection(session: SessionDoc, collectionName: string) {
+    const user = Sessioning.getUser(session);
+    const id = await Saving.getCollectionByName(user, collectionName);
+    if (id == null) {
+      return { msg: "Could not find collection name" };
+    }
+    const posts = await Saving.getPostsInCollection(user, id);
+    return { posts: posts };
+  }
+
+  @Router.post("/save")
+  async savePostToCollection(session: SessionDoc, collectionName: string, id: string) {
+    const user = Sessioning.getUser(session);
+    const collectionId = await Saving.getCollectionByName(user, collectionName);
+    const oid = new ObjectId(id);
+    if (collectionId != null) {
+      const saved = await Saving.savePostToCollection(user, collectionId, oid);
+      return { msg: saved.msg };
+    }
+    return { msg: "Could not find Collection" };
+  }
+
+  @Router.delete("/save")
+  async removePostFromCollection(session: SessionDoc, collectionName: string, id: string) {
+    const user = Sessioning.getUser(session);
+    const collectionId = await Saving.getCollectionByName(user, collectionName);
+    const oid = new ObjectId(id);
+    if (collectionId != null) {
+      const saved = await Saving.removePostFromCollection(user, collectionId, oid);
+      return { msg: saved.msg };
+    }
+    return { msg: "Could not find Collection" };
   }
 }
 
