@@ -8,6 +8,7 @@ export interface LabelDoc extends BaseDoc {
 }
 
 /**
+ * debugged by ChatGPT :)
  * concept: Labeling [Label -> Posts]
  */
 export default class LabelingConcept {
@@ -23,10 +24,8 @@ export default class LabelingConcept {
   async addLabelToPost(label: string, postId: ObjectId) {
     let labelDoc = await this.labels.readOne({ label });
     if (!labelDoc) {
-      // Create a new label document if it doesn't exist
       await this.labels.createOne({ label, posts: [postId] });
     } else {
-      // Add post to existing label's posts if not already present
       if (!labelDoc.posts.includes(postId)) {
         labelDoc.posts.push(postId);
         await this.labels.partialUpdateOne({ _id: labelDoc._id }, { posts: labelDoc.posts });
