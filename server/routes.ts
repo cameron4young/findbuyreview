@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Labeling, Posting, Saving, Sessioning } from "./app";
+import { Authing, Friending, Labeling, Messages, Posting, Preferences, Saving, Sessioning } from "./app";
+import { Offer } from "./concepts/messages";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -80,7 +81,7 @@ class Routes {
     } else {
       posts = await Posting.getPosts();
     }
-    return Responses.posts(posts);
+    return { posts: posts };
   }
 
   @Router.post("/posts")
@@ -173,9 +174,14 @@ class Routes {
 
   @Router.get("/collection")
   async getCollections(session: SessionDoc) {
-    const user = Sessioning.getUser(session);
     const collections = await Saving.getAllCollectionNames();
     return { collections: collections };
+  }
+  @Router.get("/collections/user/:userId")
+  async getCollectionsByUser(session: SessionDoc, userId: string) {
+    const userObjectId = new ObjectId(userId);
+    const collections = await Saving.getCollectionsByUser(userObjectId);
+    return { msg: "Collections fetched successfully", collections };
   }
 
   @Router.get("/collection/:collectionName")
@@ -212,9 +218,9 @@ class Routes {
     }
     return { msg: "Could not find Collection" };
   }
+
   @Router.post("/label")
   async addLabelToPost(session: SessionDoc, postId: string, label: string) {
-    const user = Sessioning.getUser(session);
     const oid = new ObjectId(postId);
     const response = await Labeling.addLabelToPost(label, oid);
     return { msg: response.msg };
@@ -222,7 +228,6 @@ class Routes {
 
   @Router.delete("/label")
   async removeLabelFromPost(session: SessionDoc, postId: string, label: string) {
-    const user = Sessioning.getUser(session);
     const oid = new ObjectId(postId);
     const response = await Labeling.removeLabelFromPost(label, oid);
     return { msg: response.msg };
@@ -235,109 +240,110 @@ class Routes {
     return { posts };
   }
 
-  @Router.post("/preferences/:username/interests")
-  async addInterest(session: SessionDoc, username: string, interest: string) {
-    // Adds an interest to the user's interests set
+  @Router.post("/preferences")
+  async createUserProfile(userId: ObjectId, interests: string, age: number, location: string, lookingFor: string, favoriteCompanies: string, doNotShow: string) {
+    const interestsArray = interests ? interests.split(",").map((item) => item.trim()) : [];
+    const favoriteCompaniesArray = favoriteCompanies ? favoriteCompanies.split(",").map((item) => item.trim()) : [];
+    const doNotShowArray = doNotShow ? doNotShow.split(",").map((item) => item.trim()) : [];
+
+    const profile = await Preferences.createUserPreferenceDoc(userId, interestsArray, age, location, lookingFor, favoriteCompaniesArray, doNotShowArray);
+    return { msg: profile };
   }
 
-  @Router.post("/preferences/favorite-companies")
-  async addFavoriteCompany(session: SessionDoc, company: string) {
-    // Adds a company to the user's favorite companies set
+  @Router.post("/preferences/:userId/interests")
+  async addInterest(session: SessionDoc, userId: ObjectId, interest: string) {
+    await Preferences.addInterest(userId, interest);
+    return { msg: `Interest ${interest} added for user ${userId}` };
   }
 
-  @Router.patch("/preferences/looking-for-status")
-  async updateLookingForStatus(session: SessionDoc, lookingFor: string) {
-    // Updates the user's "looking for" status
+  @Router.post("/preferences/:userId/favorite-companies")
+  async addFavoriteCompany(session: SessionDoc, userId: ObjectId, company: string) {
+    await Preferences.addFavoriteCompany(userId, company);
+    return { msg: `Favorite company ${company} added for user ${userId}` };
   }
 
-  @Router.post("/preferences/location")
-  async addLocation(session: SessionDoc, location: string) {
-    // Adds the user's location
+  @Router.post("/preferences/:userId/blocked")
+  async blockContent(session: SessionDoc, userId: ObjectId, block: string) {
+    await Preferences.blockContent(userId, block);
+    return { msg: `Content ${block} blocked for user ${userId}` };
   }
 
-  @Router.post("/preferences/age")
-  async addAge(session: SessionDoc, age: number) {
-    // Adds the user's age
+  @Router.patch("/preferences/:userId/location")
+  async updateLocation(session: SessionDoc, userId: ObjectId, newLocation: string) {
+    await Preferences.updateLocation(userId, newLocation);
+    return { msg: `Location updated to ${newLocation} for user ${userId}` };
   }
 
-  @Router.post("/preferences/already-seen")
-  async addAlreadySeen(session: SessionDoc, seen: string) {
-    // Adds a company or product to the user's already-seen list
+  @Router.patch("/preferences/:userId/age")
+  async updateAge(session: SessionDoc, userId: ObjectId, newAge: number) {
+    await Preferences.updateAge(userId, newAge);
+    return { msg: `Age updated to ${newAge} for user ${userId}` };
   }
 
-  @Router.post("/preferences/blocked")
-  async addBlocked(session: SessionDoc, block: string) {
-    // Adds a company or product to the user's blocked list
+  @Router.patch("/preferences/:userId/looking-for")
+  async updateLookingFor(session: SessionDoc, userId: ObjectId, newLookingFor: string) {
+    await Preferences.updateLookingFor(userId, newLookingFor);
+    return { msg: `Looking-for status updated to ${newLookingFor} for user ${userId}` };
   }
 
-  @Router.get("/preferences/has-interest")
-  async hasInterest(session: SessionDoc, potentialInterests: Set<string>) {
-    // Returns true if any potential interests overlap with the user's interests
-  }
-
-  @Router.get("/preferences/likes-company")
-  async likesCompany(session: SessionDoc, companies: Set<string>) {
-    // Returns true if any companies are in the user's favorite companies set
-  }
-
-  @Router.patch("/preferences/location")
-  async editLocation(session: SessionDoc, newLocation: string) {
-    // Updates the user's location
-  }
-
-  @Router.get("/conversations")
-  async getConversations(session: SessionDoc) {
-    // Retrieves all conversations for the logged-in user
+  @Router.get("/preferences/:userId")
+  async getPreferences(session: SessionDoc, userId: ObjectId) {
+    const preferences = await Preferences.getPreferences(userId);
+    return { preferences };
   }
 
   @Router.post("/conversations")
-  async createConversation(session: SessionDoc, recipientId: ObjectId) {
-    // Creates a new conversation between the logged-in user and the recipient
+  async createConversation(session: SessionDoc, recipientId: string) {
+    const senderId = Sessioning.getUser(session);
+    const response = await Messages.createConversation(senderId, new ObjectId(recipientId));
+    return { msg: response.msg, conversationId: response.conversationId };
   }
 
-  @Router.get("/conversations/:conversationId")
-  async getConversation(session: SessionDoc, conversationId: ObjectId) {
-    // Retrieves all messages in a specific conversation
+  @Router.get("/conversations")
+  async getConversationBySenderAndRecipient(session: SessionDoc, recipientId: string) {
+    const senderId = Sessioning.getUser(session);
+    const conversation = await Messages.getConversationBySenderAndRecipient(senderId, new ObjectId(recipientId));
+    return { conversation };
+  }
+
+  @Router.get("/conversations/:conversationId/messages")
+  async getMessages(session: SessionDoc, conversationId: string) {
+    const messages = await Messages.getMessages(new ObjectId(conversationId));
+    return { messages };
   }
 
   @Router.post("/conversations/:conversationId/messages")
-  async sendMessage(session: SessionDoc, conversationId: ObjectId, content: string, offer?: String) {
-    // Sends a new message in the specified conversation
+  async sendMessage(session: SessionDoc, conversationId: string, content: string, offer: Offer) {
+    const response = await Messages.sendMessage(new ObjectId(conversationId), content, offer);
+    return { msg: response.msg, messageId: response.messageId };
+  }
+
+  @Router.post("/conversations/:conversationId/messages/:messageId/response")
+  async addResponseToOffer(session: SessionDoc, conversationId: string, messageId: string, postId: string, response: string) {
+    const resp = await Messages.addResponseToOffer(new ObjectId(conversationId), new ObjectId(messageId), new ObjectId(postId), response);
+    return { msg: resp.msg };
+  }
+
+  @Router.post("/conversations/:conversationId/messages/:messageId/approve")
+  async approveOffer(session: SessionDoc, conversationId: string, messageId: string) {
+    const senderId = Sessioning.getUser(session);
+    const resp = await Messages.approveOffer(new ObjectId(conversationId), new ObjectId(messageId), senderId);
+    return { msg: resp.msg };
   }
 
   @Router.delete("/conversations/:conversationId/messages/:messageId")
-  async deleteMessage(session: SessionDoc, conversationId: ObjectId, messageId: ObjectId) {
-    // Deletes a specific message from the conversation
-  }
-
-  @Router.post("/offers")
-  async sendOffer(session: SessionDoc, company: string, product: string, duration: number, recipientId: ObjectId, deal: string) {
-    // Sends a new Offer (company, product, duration, deal) to the recipient
+  async deleteMessage(session: SessionDoc, conversationId: string, messageId: string) {
+    const response = await Messages.deleteMessage(new ObjectId(conversationId), new ObjectId(messageId));
+    return { msg: response.msg };
   }
 
   @Router.post("/promotions")
-  async createPromotion(session: SessionDoc, targetId: ObjectId, interests: Set<string>, similarCompanies: Set<string>, duration: number) {
-    // Promote a post or profile
-  }
-
-  @Router.get("/promotions")
-  async getPromotions(session: SessionDoc) {
-    // Get all promotions
-  }
-
-  @Router.patch("/promotions/:promotionId")
-  async updatePromotion(session: SessionDoc, promotionId: ObjectId, interests?: Set<string>, similarCompanies?: Set<string>, duration?: number) {
-    // Update promotion details
-  }
-
-  @Router.delete("/promotions/:promotionId")
-  async deletePromotion(session: SessionDoc, promotionId: ObjectId) {
-    // Cancel a promotion
-  }
-
-  @Router.get("/promotions/:promotionId/check-expiration")
-  async checkPromotionExpiration(session: SessionDoc, promotionId: ObjectId) {
-    // Check if promotion is expired
+  async createPromotion(session: SessionDoc, postId: string, duration: number) {
+    const oid = new ObjectId(postId);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + duration);
+    const response = await Labeling.addLabelToPost("promoted", oid, expirationDate);
+    return { msg: response.msg };
   }
 }
 

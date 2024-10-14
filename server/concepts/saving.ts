@@ -93,4 +93,12 @@ export default class SavingConcept {
     const collections = await this.collections.readMany({});
     return collections.map((collection) => collection.name);
   }
+
+  async getCollectionsByUser(user: ObjectId): Promise<SaveCollectionDoc[]> {
+    const collections = await this.collections.readMany({ user });
+    if (!collections || collections.length === 0) {
+      throw new NotFoundError(`No collections found for user ${user}`);
+    }
+    return collections;
+  }
 }

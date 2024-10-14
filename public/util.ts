@@ -99,6 +99,12 @@ const operations: Operation[] = [
     fields: {},
   },
   {
+    name: "Get Collections by User",
+    endpoint: "/api/collections/user/:userId",
+    method: "GET",
+    fields: { userId: "input" },
+  },
+  {
     name: "Get All Posts In Collection",
     endpoint: "/api/collection/:collectionName",
     method: "GET",
@@ -134,9 +140,105 @@ const operations: Operation[] = [
     method: "GET",
     fields: { label: "input" },
   },
-  //
-  // ...
-  //
+  {
+    name: "Create User Preferences",
+    endpoint: "/api/preferences",
+    method: "POST",
+    fields: { userId: "input", interests: "input", age: "input", location: "input", lookingFor: "input", favoriteCompanies: "input", doNotShow: "input" },
+  },
+  {
+    name: "Add Interest",
+    endpoint: "/api/preferences/:userId/interests",
+    method: "POST",
+    fields: { userId: "input", interest: "input" },
+  },
+  {
+    name: "Add Favorite Company",
+    endpoint: "/api/preferences/:userId/favorite-companies",
+    method: "POST",
+    fields: { userId: "input", company: "input" },
+  },
+  {
+    name: "Block Content",
+    endpoint: "/api/preferences/:userId/blocked",
+    method: "POST",
+    fields: { userId: "input", block: "input" },
+  },
+  {
+    name: "Update Location",
+    endpoint: "/api/preferences/:userId/location",
+    method: "PATCH",
+    fields: { userId: "input", newLocation: "input" },
+  },
+  {
+    name: "Update Age",
+    endpoint: "/api/preferences/:userId/age",
+    method: "PATCH",
+    fields: { userId: "input", newAge: "input" },
+  },
+  {
+    name: "Update Looking For",
+    endpoint: "/api/preferences/:userId/looking-for",
+    method: "PATCH",
+    fields: { userId: "input", newLookingFor: "input" },
+  },
+  {
+    name: "Get Preferences",
+    endpoint: "/api/preferences/:userId",
+    method: "GET",
+    fields: { userId: "input" },
+  },
+  {
+    name: "Create Conversation",
+    endpoint: "/api/conversations",
+    method: "POST",
+    fields: { recipientId: "input" },
+  },
+  {
+    name: "Get Conversation by Sender and Recipient",
+    endpoint: "/api/conversations",
+    method: "GET",
+    fields: { recipientId: "input" },
+  },
+  {
+    name: "Get Messages in Conversation",
+    endpoint: "/api/conversations/:conversationId/messages",
+    method: "GET",
+    fields: { conversationId: "input" },
+  },
+  {
+    name: "Send Message",
+    endpoint: "/api/conversations/:conversationId/messages",
+    method: "POST",
+    fields: { conversationId: "input", content: "input", offer: { company: "input", product: "input", duration: "input" } },
+  },
+  {
+    name: "Add Response to Offer",
+    endpoint: "/api/conversations/:conversationId/messages/:messageId/response",
+    method: "POST",
+    fields: { conversationId: "input", messageId: "input", postId: "input", response: "input" },
+  },
+  {
+    name: "Approve Offer",
+    endpoint: "/api/conversations/:conversationId/messages/:messageId/approve",
+    method: "POST",
+    fields: { conversationId: "input", messageId: "input" },
+  },
+  {
+    name: "Delete Message",
+    endpoint: "/api/conversations/:conversationId/messages/:messageId",
+    method: "DELETE",
+    fields: { conversationId: "input", messageId: "input" },
+  },
+  {
+    name: "Create Promotion",
+    endpoint: "/api/promotions",
+    method: "POST",
+    fields: {
+      postId: "input",
+      duration: "input",
+    },
+  },
 ];
 
 /*
